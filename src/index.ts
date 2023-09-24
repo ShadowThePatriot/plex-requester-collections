@@ -22,6 +22,8 @@ const COLL_TITLE_PREFIX_SHOW = "TV Shows Requested by ";
 const STALE_ADDED_DATE_THRESHOLD = moment().subtract(6, "months");
 const STALE_VIEW_DATE_THRESHOLD = moment().subtract(3, "months");
 const MS_24_HOURS = 86400000;
+const ENV_RUNDELAY = process.env.FEATURE_RUN_DELAY;
+const MS_ENV_RUNDELAY: number = +ENV_RUNDELAY * 1000;
 
 // Start after a delay, if set.
 const startDelay =
@@ -30,11 +32,17 @@ const startDelay =
 		: 0;
 
 setTimeout(() => {
+	if (ENV_RUNDELAY >= "1") {
+		// Allows users to specify a runtime delay in env or docker compose.
+		// ENV variable is in seconds, runtime delay is converted to milliseconds.
+		setInterval(app, MS_ENV_RUNDELAY)
+	}
 	if (process.env.FEATURE_RUN_ONCE !== "1") {
 		// Feature flag to disable running every 24h. For development. Defaults to running every 24h.
 		// Run every 24 h.
 		setInterval(app, MS_24_HOURS);
 	}
+	
 	app();
 }, startDelay);
 
